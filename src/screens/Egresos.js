@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Alert, StyleSheet, Animated } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, Modal, Alert, StyleSheet, Animated } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -15,6 +15,8 @@ function Egresos({ route, navigation }) {
   const [egresos, setEgresos] = useState([]);
   const [customError, setCustomError] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0)); // Para animación de fade in/out
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentEgreso, setCurrentEgreso] = useState(null);
 
   const handleAddEgreso = (values, { resetForm }) => {
     const newEgreso = { ...values, id: Date.now().toString() };
@@ -35,8 +37,16 @@ function Egresos({ route, navigation }) {
     setEgresos(egresos.filter(egreso => egreso.id !== id));
   };
 
-  const handleEditEgreso = (id, newValues) => {
-    setEgresos(egresos.map(egreso => egreso.id === id ? { ...egreso, ...newValues } : egreso));
+  const handleEditEgreso = (values) => {
+    setEgresos(egresos.map(egreso =>
+      egreso.id === currentEgreso.id ? { ...egreso, ...values } : egreso
+    ));
+    setEditModalVisible(false);
+  };
+
+  const openEditModal = (egreso) => {
+    setCurrentEgreso(egreso);
+    setEditModalVisible(true);
   };
 
   const handleNext = () => {
@@ -114,13 +124,69 @@ function Egresos({ route, navigation }) {
               <TouchableOpacity onPress={() => handleDeleteEgreso(item.id)}>
                 <MaterialIcons name="delete" size={24} color="red" />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleEditEgreso(item.id, { tipoEgreso: 'Nuevo Tipo', monto: 'Nuevo Monto' })}>
+              <TouchableOpacity onPress={() => openEditModal(item)}>
                 <MaterialIcons name="edit" size={24} color="blue" style={{ marginLeft: 15 }} />
               </TouchableOpacity>
             </View>
           </Animated.View>
         )}
       />
+
+      {/* Modal para editar egreso */}
+      <Modal visible={editModalVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {currentEgreso && (
+              <Formik
+                initialValues={{ tipoEgreso: currentEgreso.tipoEgreso, monto: currentEgreso.monto }}
+                validationSchema={EgresoSchema}
+                onSubmit={handleEditEgreso}
+              >
+                {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+                  <View>
+                    <Text style={styles.label}>Tipo de Egreso</Text>
+                    <View style={styles.pickerContainer}>
+                      <Picker
+                        selectedValue={values.tipoEgreso}
+                        onValueChange={handleChange('tipoEgreso')}
+                        onBlur={handleBlur('tipoEgreso')}
+                        style={styles.picker}
+                      >
+                        <Picker.Item label="Seleccione un tipo de egreso" value="" />
+                        <Picker.Item label="Alquiler/Hipoteca" value="Alquiler/Hipoteca" />
+                        <Picker.Item label="Canasta Básica" value="Canasta Básica" />
+                        <Picker.Item label="Financiamientos" value="Financiamientos" />
+                        <Picker.Item label="Transporte" value="Transporte" />
+                        <Picker.Item label="Servicios públicos" value="Servicios públicos" />
+                        <Picker.Item label="Salud y Seguro" value="Salud y Seguro" />
+                        <Picker.Item label="Egresos Varios" value="Egresos Varios" />
+                      </Picker>
+                    </View>
+                    {errors.tipoEgreso && touched.tipoEgreso ? <Text style={styles.errorText}>{errors.tipoEgreso}</Text> : null}
+
+                    <Text style={styles.label}>Monto</Text>
+                    <TextInput
+                      style={styles.input}
+                      onChangeText={handleChange('monto')}
+                      onBlur={handleBlur('monto')}
+                      value={values.monto}
+                      keyboardType="numeric"
+                    />
+                    {errors.monto && touched.monto ? <Text style={styles.errorText}>{errors.monto}</Text> : null}
+
+                    <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
+                      <Text style={styles.saveButtonText}>Guardar Cambios</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </Formik>
+            )}
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setEditModalVisible(false)}>
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -215,6 +281,40 @@ const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  saveButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  cancelButton: {
+    backgroundColor: '#f44336',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  cancelButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
 
