@@ -1,5 +1,19 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet,TouchableOpacity,Image } from 'react-native';
+import { createStackNavigator } from "@react-navigation/stack";
+import Ingresos from './Ingresos';
+import Egresos from './Egresos';
+import Graficas from './Graficas';
 
+const Stack = createStackNavigator();
 
-export default function DatosFinancierosCliente() {}
+function DatosFinancierosCliente() {
+    return (
+        <Stack.Navigator>
+            <Stack.Screen name="Ingresos" component={Ingresos} />
+            <Stack.Screen name="Egresos" component={Egresos} />
+            <Stack.Screen name="Graficas" component={Graficas} />
+        </Stack.Navigator>
+    );
+}
+
+export default DatosFinancierosCliente;
