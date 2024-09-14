@@ -118,7 +118,7 @@ function Egresos({ route, navigation }) {
           <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
             <View>
               <Text style={styles.cardText}>Tipo de Egreso: {item.tipoEgreso}</Text>
-              <Text style={styles.cardText}>Monto: {item.monto}</Text>
+              <Text style={styles.cardText}>Monto: $ {item.monto}</Text>
             </View>
             <View style={styles.cardActions}>
               <TouchableOpacity onPress={() => handleDeleteEgreso(item.id)}>

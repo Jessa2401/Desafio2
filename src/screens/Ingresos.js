@@ -3,32 +3,47 @@ import { View, Text, TextInput, Button, FlatList, TouchableOpacity, Modal, Alert
 import { Picker } from '@react-native-picker/picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { Ionicons } from '@expo/vector-icons'; // Importa los iconos que necesitas
+import { Ionicons } from '@expo/vector-icons'; 
+
 
 const IngresoSchema = Yup.object().shape({
   tipoIngreso: Yup.string().required('Requerido'),
   monto: Yup.number().required('Requerido').positive('Debe ser un número positivo'),
 });
 
-function Ingresos({ navigation }) {
+export default function Ingresos({ navigation }) {
   const [ingresos, setIngresos] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [currentIngreso, setCurrentIngreso] = useState(null);
 
   const handleAddIngreso = (values, { resetForm }) => {
-    setIngresos([...ingresos, { ...values, id: Date.now().toString() }]);
+    const newIngreso = {
+      tipoIngreso: values.tipoIngreso,
+      monto: values.monto,
+      id: Date.now().toString()
+    };
+    const newIngresos = ingresos.concat(newIngreso);
+    setIngresos(newIngresos);
     resetForm();
   };
 
   const handleDeleteIngreso = (id) => {
-    setIngresos(ingresos.filter(ingreso => ingreso.id !== id));
+    const newIngresos = ingresos.filter(ingreso => ingreso.id !== id);
+    setIngresos(newIngresos);
   };
 
   const handleEditIngreso = (values) => {
-    setIngresos(ingresos.map(ingreso =>
-      ingreso.id === currentIngreso.id ? { ...ingreso, ...values } : ingreso
-    ));
-    setModalVisible(false); // Cierra el modal al terminar la edición
+    const newIngresos = ingresos.map(ingreso => {
+      if (ingreso.id === currentIngreso.id) {
+        return {
+          tipoIngreso: values.tipoIngreso,
+          monto: values.monto,
+          id: ingreso.id
+        };
+      }
+      return ingreso;
+    });
+    setIngresos(newIngresos);
   };
 
   const openEditModal = (ingreso) => {
@@ -101,7 +116,7 @@ function Ingresos({ navigation }) {
           <View style={styles.listItem}>
             <View>
               <Text style={styles.listText}>Tipo de Ingreso: {item.tipoIngreso}</Text>
-              <Text style={styles.listText}>Monto: {item.monto}</Text>
+              <Text style={styles.listText}>Monto: $ {item.monto}</Text>
             </View>
             <View style={styles.actions}>
               <TouchableOpacity onPress={() => handleDeleteIngreso(item.id)} style={styles.actionButton}>
@@ -241,4 +256,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Ingresos;

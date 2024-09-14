@@ -6,13 +6,14 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DatosFinancierosCliente from './src/screens/DatosFinancierosCliente';
 import ClasificacionCliente from './src/screens/ClasificacionCliente';
+import {DatosProvider} from './src/screens/DatosContext';
 
 const Tab = createBottomTabNavigator();
 
 
 export default function App() {
   return (
-    <NavigationContainer>
+        <NavigationContainer>
       <Tab.Navigator>
         <Tab.Screen 
           name="Datos Financieros" 
