@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, TouchableOpacity, Modal, Alert, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Ionicons } from '@expo/vector-icons'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const IngresoSchema = Yup.object().shape({
@@ -16,48 +18,79 @@ export default function Ingresos({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [currentIngreso, setCurrentIngreso] = useState(null);
 
-  const handleAddIngreso = (values, { resetForm }) => {
-    const newIngreso = {
-      tipoIngreso: values.tipoIngreso,
-      monto: values.monto,
-      id: Date.now().toString()
-    };
-    const newIngresos = ingresos.concat(newIngreso);
-    setIngresos(newIngresos);
-    resetForm();
-  };
+  
+const saveIngresosToStorage = async (ingresos) => {
+  try {
+    const jsonValue = JSON.stringify(ingresos);
+    await AsyncStorage.setItem('@ingresos', jsonValue);
+  } catch (e) {
+    console.error("Error guardando los ingresos", e);
+  }
+};
 
-  const handleDeleteIngreso = (id) => {
-    const newIngresos = ingresos.filter(ingreso => ingreso.id !== id);
-    setIngresos(newIngresos);
-  };
+const loadIngresosFromStorage = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem('@ingresos');
+    return jsonValue != null ? JSON.parse(jsonValue) : [];
+  } catch (e) {
+    console.error("Error cargando los ingresos", e);
+  }
+};
 
-  const handleEditIngreso = (values) => {
-    const newIngresos = ingresos.map(ingreso => {
-      if (ingreso.id === currentIngreso.id) {
-        return {
-          tipoIngreso: values.tipoIngreso,
-          monto: values.monto,
-          id: ingreso.id
-        };
-      }
-      return ingreso;
-    });
-    setIngresos(newIngresos);
+ // Cargar los ingresos desde AsyncStorage cuando se monta el componente
+ useEffect(() => {
+  const loadData = async () => {
+    const storedIngresos = await loadIngresosFromStorage();
+    setIngresos(storedIngresos);
   };
+  loadData();
+}, []);
 
-  const openEditModal = (ingreso) => {
-    setCurrentIngreso(ingreso);
-    setModalVisible(true);
+const handleAddIngreso = (values, { resetForm }) => {
+  const newIngreso = {
+    tipoIngreso: values.tipoIngreso,
+    monto: values.monto,
+    id: Date.now().toString()
   };
+  const newIngresos = ingresos.concat(newIngreso);
+  setIngresos(newIngresos);
+  saveIngresosToStorage(newIngresos); // Guardar ingresos en AsyncStorage
+  resetForm();
+};
 
-  const handleNext = () => {
-    if (ingresos.length === 0) {
-      Alert.alert('Error', 'Debe ingresar al menos un tipo de ingreso antes de continuar.');
-    } else {
-      navigation.navigate('Egresos', { ingresos });
+const handleDeleteIngreso = (id) => {
+  const newIngresos = ingresos.filter(ingreso => ingreso.id !== id);
+  setIngresos(newIngresos);
+  saveIngresosToStorage(newIngresos); // Actualizar AsyncStorage
+};
+
+const handleEditIngreso = (values) => {
+  const newIngresos = ingresos.map(ingreso => {
+    if (ingreso.id === currentIngreso.id) {
+      return {
+        tipoIngreso: values.tipoIngreso,
+        monto: values.monto,
+        id: ingreso.id
+      };
     }
-  };
+    return ingreso;
+  });
+  setIngresos(newIngresos);
+  saveIngresosToStorage(newIngresos); // Actualizar AsyncStorage
+};
+
+const openEditModal = (ingreso) => {
+  setCurrentIngreso(ingreso);
+  setModalVisible(true);
+};
+
+const handleNext = () => {
+  if (ingresos.length === 0) {
+    Alert.alert('Error', 'Debe ingresar al menos un tipo de ingreso antes de continuar.');
+  } else {
+    navigation.navigate('Egresos', { ingresos });
+  }
+}
 
   return (
     <View style={styles.container}>
@@ -68,6 +101,7 @@ export default function Ingresos({ navigation }) {
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <View style={styles.form}>
+            <Text style={styles.listText}>Describa todos los ingresos que recibe mensualmente</Text>
             <Text style={styles.label}>Tipo de Ingreso</Text>
             <View style={styles.pickerContainer}>
               <Picker
@@ -235,6 +269,7 @@ const styles = StyleSheet.create({
   },
   listText: {
     fontSize: 16,
+    marginBottom: 8,
   },
   actions: {
     flexDirection: 'row',

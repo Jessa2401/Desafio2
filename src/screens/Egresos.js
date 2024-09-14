@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, Modal, Alert, StyleSheet, Animated } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { MaterialIcons } from '@expo/vector-icons'; // Íconos de Material Design
+import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EgresoSchema = Yup.object().shape({
   tipoEgreso: Yup.string().required('Requerido'),
@@ -18,9 +19,42 @@ function Egresos({ route, navigation }) {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentEgreso, setCurrentEgreso] = useState(null);
 
+  // Función para guardar los egresos en AsyncStorage
+  const saveEgresosToStorage = async (egresos) => {
+    try {
+      await AsyncStorage.setItem('@egresos', JSON.stringify(egresos));
+    } catch (error) {
+      console.error('Error guardando los egresos:', error);
+    }
+  };
+
+  // Función para cargar los egresos de AsyncStorage
+  const loadEgresosFromStorage = async () => {
+    try {
+      const storedEgresos = await AsyncStorage.getItem('egresos');
+      if (storedEgresos !== null) {
+        setEgresos(JSON.parse(storedEgresos));
+      }
+    } catch (error) {
+      console.error('Error cargando los egresos:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadEgresosFromStorage();
+  }, []);
+
   const handleAddEgreso = (values, { resetForm }) => {
-    const newEgreso = { ...values, id: Date.now().toString() };
-    setEgresos([...egresos, newEgreso]);
+    const newEgreso = {
+      id: Date.now().toString(),
+      tipoEgreso: values.tipoEgreso,
+      monto: values.monto,
+    };
+    const updatedEgresos = egresos.concat(newEgreso); // Usamos concat
+    setEgresos(updatedEgresos);
+
+    // Guardar los egresos en AsyncStorage
+    saveEgresosToStorage(updatedEgresos);
 
     // Animación de fade in
     Animated.timing(fadeAnim, {
@@ -33,20 +67,31 @@ function Egresos({ route, navigation }) {
     setCustomError('');
   };
 
-  const handleDeleteEgreso = (id) => {
-    setEgresos(egresos.filter(egreso => egreso.id !== id));
-  };
-
   const handleEditEgreso = (values) => {
-    setEgresos(egresos.map(egreso =>
-      egreso.id === currentEgreso.id ? { ...egreso, ...values } : egreso
-    ));
+    const updatedEgresos = egresos.map(egreso => {
+      if (egreso.id === currentEgreso.id) {
+        return {
+          id: egreso.id,
+          tipoEgreso: values.tipoEgreso,
+          monto: values.monto,
+        };
+      }
+      return egreso;
+    });
+    setEgresos(updatedEgresos);
+
+    // Guardar los egresos en AsyncStorage
+    saveEgresosToStorage(updatedEgresos);
+
     setEditModalVisible(false);
   };
 
-  const openEditModal = (egreso) => {
-    setCurrentEgreso(egreso);
-    setEditModalVisible(true);
+  const handleDeleteEgreso = (id) => {
+    const updatedEgresos = egresos.filter(egreso => egreso.id !== id);
+    setcurrentEgresos(updatedEgresos);
+
+    // Guardar los egresos actualizados en AsyncStorage
+    saveEgresosToStorage(updatedEgresos);
   };
 
   const handleNext = () => {
@@ -66,6 +111,7 @@ function Egresos({ route, navigation }) {
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <View style={styles.form}>
+            <Text style={styles.listText}>Describa todos los egresos que mensuales</Text>
             <Text style={styles.label}>Tipo de Egreso</Text>
             <View style={styles.pickerContainer}>
               <Picker
@@ -118,7 +164,7 @@ function Egresos({ route, navigation }) {
           <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
             <View>
               <Text style={styles.cardText}>Tipo de Egreso: {item.tipoEgreso}</Text>
-              <Text style={styles.cardText}>Monto: $ {item.monto}</Text>
+              <Text style={styles.cardText}>Monto: {item.monto}</Text>
             </View>
             <View style={styles.cardActions}>
               <TouchableOpacity onPress={() => handleDeleteEgreso(item.id)}>
@@ -260,6 +306,10 @@ const styles = StyleSheet.create({
   nextButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  listText: {
+    fontSize: 16,
+    marginBottom: 8,
   },
   card: {
     backgroundColor: '#fff',
