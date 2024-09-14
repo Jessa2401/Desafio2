@@ -88,7 +88,7 @@ function Egresos({ route, navigation }) {
 
   const handleDeleteEgreso = (id) => {
     const updatedEgresos = egresos.filter(egreso => egreso.id !== id);
-    setcurrentEgresos(updatedEgresos);
+    setEgresos(updatedEgresos);
 
     // Guardar los egresos actualizados en AsyncStorage
     saveEgresosToStorage(updatedEgresos);
@@ -100,6 +100,12 @@ function Egresos({ route, navigation }) {
     } else {
       navigation.navigate('Graficas', { ingresos, egresos });
     }
+  };
+
+  // Nueva función para abrir el modal de edición
+  const openEditModal = (egreso) => {
+    setCurrentEgreso(egreso); // Asigna el egreso que se va a editar
+    setEditModalVisible(true); // Muestra el modal
   };
 
   return (
@@ -217,19 +223,22 @@ function Egresos({ route, navigation }) {
                       onBlur={handleBlur('monto')}
                       value={values.monto}
                       keyboardType="numeric"
+                      placeholder="Ingrese el monto"
+                      placeholderTextColor="#aaa"
                     />
                     {errors.monto && touched.monto ? <Text style={styles.errorText}>{errors.monto}</Text> : null}
 
                     <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
                       <Text style={styles.saveButtonText}>Guardar Cambios</Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.cancelButton} onPress={() => setEditModalVisible(false)}>
+                      <Text style={styles.cancelButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </Formik>
             )}
-            <TouchableOpacity style={styles.cancelButton} onPress={() => setEditModalVisible(false)}>
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -241,93 +250,61 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
   },
   form: {
     marginBottom: 20,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     marginBottom: 5,
-    color: '#333',
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    marginBottom: 10,
-    backgroundColor: '#fff',
-  },
-  picker: {
-    height: 40,
-    color: '#333',
   },
   input: {
-    height: 40,
-    borderColor: '#ddd',
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    borderColor: '#ccc',
+    padding: 10,
     marginBottom: 10,
-    backgroundColor: '#fff',
+    borderRadius: 5,
     color: '#333',
   },
-  errorText: {
-    fontSize: 12,
-    color: 'red',
-    marginBottom: 10,
-  },
   addButton: {
-    backgroundColor: '#007BFF',
-    padding: 10,
+    backgroundColor: '#28a745',
+    padding: 15,
     borderRadius: 5,
     alignItems: 'center',
   },
   addButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   nextButton: {
-    backgroundColor: '#28a745',
-    padding: 10,
+    backgroundColor: '#007bff',
+    padding: 15,
     borderRadius: 5,
     alignItems: 'center',
-    marginVertical: 20,
+    marginTop: 10,
   },
   nextButtonText: {
     color: '#fff',
-    fontWeight: '600',
-  },
-  listText: {
+    fontWeight: 'bold',
     fontSize: 16,
-    marginBottom: 8,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
     padding: 15,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
     marginBottom: 10,
+    borderRadius: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   cardText: {
     fontSize: 16,
-    color: '#333',
   },
   cardActions: {
     flexDirection: 'row',
@@ -345,26 +322,38 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   saveButton: {
-    backgroundColor: '#007BFF',
-    padding: 10,
+    backgroundColor: '#28a745',
+    padding: 15,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
   },
   saveButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   cancelButton: {
-    backgroundColor: '#f44336',
-    padding: 10,
+    backgroundColor: '#dc3545',
+    padding: 15,
     borderRadius: 5,
     alignItems: 'center',
     marginTop: 10,
   },
   cancelButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
 });
 
