@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native'; // Importar hook de navegación
 
 export default function ClasificacionCliente() {
+  const navigation = useNavigation(); // Obtener la navegación
   const [ingresos, setIngresos] = useState(0);
   const [egresos, setEgresos] = useState(0);
   const [disponibilidadFinanciera, setDisponibilidadFinanciera] = useState(0);
@@ -24,28 +26,34 @@ export default function ClasificacionCliente() {
 
       setIngresos(totalIngresos);
       setEgresos(totalEgresos);
+      
       const disponibilidad = totalIngresos - totalEgresos;
       setDisponibilidadFinanciera(disponibilidad);
-      setPorcentajeDisponibilidad(totalIngresos ? (disponibilidad * 100) / totalIngresos : 0);
+
+      const porcentaje = totalIngresos ? (disponibilidad * 100) / totalIngresos : 0;
+      setPorcentajeDisponibilidad(porcentaje);
+
+      // Calcular la clasificación después de que los datos se han actualizado
+      calcularClasificacion(totalIngresos, totalEgresos, disponibilidad, porcentaje);
     } catch (e) {
       console.error("Error cargando datos financieros", e);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadData();  // Recarga los datos cuando la pantalla recibe el foco
+    });
 
-  useEffect(() => {
-    calcularClasificacion();
-  }, [disponibilidadFinanciera, porcentajeDisponibilidad]);
+    return unsubscribe;  // Limpia el listener cuando el componente se desmonta
+  }, [navigation]);
 
-  const calcularClasificacion = () => {
+  const calcularClasificacion = (totalIngresos, totalEgresos, disponibilidad, porcentaje) => {
     let planes = [];
-    if (ingresos < 360) {
+    if (totalIngresos < 360) {
       planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
-    } else if (ingresos >= 360 && ingresos < 700) {
-      if (porcentajeDisponibilidad < 40) {
+    } else if (totalIngresos >= 360 && totalIngresos < 700) {
+      if (porcentaje < 40) {
         planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
       } else {
         planes = [
@@ -54,10 +62,10 @@ export default function ClasificacionCliente() {
           { key: 'Credito personal hasta $ 2,000.00' }
         ];
       }
-    } else if (ingresos >= 700 && ingresos < 1200) {
-      if (porcentajeDisponibilidad < 20) {
+    } else if (totalIngresos >= 700 && totalIngresos < 1200) {
+      if (porcentaje < 20) {
         planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
-      } else if (porcentajeDisponibilidad >= 20 && porcentajeDisponibilidad < 40) {
+      } else if (porcentaje >= 20 && porcentaje < 40) {
         planes = [
           { key: 'Tiene acceso a apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
@@ -70,10 +78,10 @@ export default function ClasificacionCliente() {
           { key: 'Credito personal hasta $ 5,000.00' }
         ];
       }
-    } else if (ingresos >= 1200) {
-      if (porcentajeDisponibilidad < 20) {
+    } else if (totalIngresos >= 1200) {
+      if (porcentaje < 20) {
         planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
-      } else if (porcentajeDisponibilidad >= 20 && porcentajeDisponibilidad <= 30) {
+      } else if (porcentaje >= 20 && porcentaje <= 30) {
         planes = [
           { key: 'Tiene acceso a apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
@@ -97,9 +105,8 @@ export default function ClasificacionCliente() {
 
   return (
     <View style={styles.container}>
-      
       <Text></Text>
-      <Text style={styles.title}>Informació Crediticia</Text>
+      <Text style={styles.title}>Información Crediticia</Text>
 
       <View style={styles.dataContainer}>
         <Text style={styles.label}>Ingresos totales: ${ingresos}</Text>
