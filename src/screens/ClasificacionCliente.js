@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList , Button} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native'; // Importar hook de navegación
+
 
 export default function ClasificacionCliente() {
   const navigation = useNavigation(); // Obtener la navegación
@@ -10,6 +11,10 @@ export default function ClasificacionCliente() {
   const [disponibilidadFinanciera, setDisponibilidadFinanciera] = useState(0);
   const [porcentajeDisponibilidad, setPorcentajeDisponibilidad] = useState(0);
   const [clasificacion, setClasificacion] = useState([]);
+
+  const handlePress = () => {
+    navigation.navigate('ProductoFinanciero', {productos: clasificacion});
+  };
 
   const loadData = async () => {
     try {
@@ -51,29 +56,29 @@ export default function ClasificacionCliente() {
   const calcularClasificacion = (totalIngresos, totalEgresos, disponibilidad, porcentaje) => {
     let planes = [];
     if (totalIngresos < 360) {
-      planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
+      planes = [{ key: 'Apertura de cuenta corriente' }];
     } else if (totalIngresos >= 360 && totalIngresos < 700) {
       if (porcentaje < 40) {
-        planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
+        planes = [{ key: 'Apertura de cuenta corriente' }];
       } else {
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
           { key: 'Credito personal hasta $ 2,000.00' }
         ];
       }
     } else if (totalIngresos >= 700 && totalIngresos < 1200) {
       if (porcentaje < 20) {
-        planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
+        planes = [{ key: 'Apertura de cuenta corriente' }];
       } else if (porcentaje >= 20 && porcentaje < 40) {
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
           { key: 'Credito personal hasta $ 2,000.00' }
         ];
       } else {
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clásica' },
           { key: 'Tarjeta de Credito Oro' },
           { key: 'Credito personal hasta $ 8,000.00' }
@@ -82,20 +87,20 @@ export default function ClasificacionCliente() {
     } else if (totalIngresos >= 1200 && totalIngresos < 3000) {
       if (porcentaje < 20) {
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
           { key: 'Credito personal hasta $ 2,000.00' }
         ];
       } else if (porcentaje >= 20 && porcentaje <= 40) {
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clásica' },
           { key: 'Tarjeta de Credito Oro' },
           { key: 'Credito personal hasta $ 8,000.00' }
         ];
       } else {
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
           { key: 'Tarjeta de Credito Oro' },
           { key: 'Tarjeta de Credito Platinum' },
@@ -105,14 +110,14 @@ export default function ClasificacionCliente() {
     } else if(totalIngresos >= 3000) {
       if(porcentaje < 20){
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clásica' },
           { key: 'Tarjeta de Credito Oro' },
           { key: 'Credito personal hasta $ 8,000.00' }
         ];
       } else if(porcentaje >20 && porcentaje < 30){
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
           { key: 'Tarjeta de Credito Oro' },
           { key: 'Tarjeta de Credito Platinum' },
@@ -120,7 +125,7 @@ export default function ClasificacionCliente() {
         ];
       } else{
         planes = [
-          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
           { key: 'Tarjeta de Credito Oro' },
           { key: 'Tarjeta de Credito Platinum' },
@@ -150,6 +155,7 @@ export default function ClasificacionCliente() {
         keyExtractor={(item, index) => index.toString()}
         style={styles.list}
       />
+      <Button title="Producto Financiero" onPress={handlePress} />
     </View>
   );
 }
