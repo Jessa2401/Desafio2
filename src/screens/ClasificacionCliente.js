@@ -74,14 +74,26 @@ export default function ClasificacionCliente() {
       } else {
         planes = [
           { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Tarjeta de Credito Clásica' },
           { key: 'Tarjeta de Credito Oro' },
-          { key: 'Credito personal hasta $ 5,000.00' }
+          { key: 'Credito personal hasta $ 8,000.00' }
         ];
       }
-    } else if (totalIngresos >= 1200) {
+    } else if (totalIngresos >= 1200 && totalIngresos < 3000) {
       if (porcentaje < 20) {
-        planes = [{ key: 'Tiene acceso a apertura de cuenta corriente' }];
-      } else if (porcentaje >= 20 && porcentaje <= 30) {
+        planes = [
+          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Tarjeta de Credito Clasica' },
+          { key: 'Credito personal hasta $ 2,000.00' }
+        ];
+      } else if (porcentaje >= 20 && porcentaje <= 40) {
+        planes = [
+          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Tarjeta de Credito Clásica' },
+          { key: 'Tarjeta de Credito Oro' },
+          { key: 'Credito personal hasta $ 8,000.00' }
+        ];
+      } else {
         planes = [
           { key: 'Tiene acceso a apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
@@ -89,7 +101,24 @@ export default function ClasificacionCliente() {
           { key: 'Tarjeta de Credito Platinum' },
           { key: 'Credito personal hasta $ 25,000.00' }
         ];
-      } else {
+      }
+    } else if(totalIngresos >= 3000) {
+      if(porcentaje < 20){
+        planes = [
+          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Tarjeta de Credito Clásica' },
+          { key: 'Tarjeta de Credito Oro' },
+          { key: 'Credito personal hasta $ 8,000.00' }
+        ];
+      } else if(porcentaje >20 && porcentaje < 30){
+        planes = [
+          { key: 'Tiene acceso a apertura de cuenta corriente' },
+          { key: 'Tarjeta de Credito Clasica' },
+          { key: 'Tarjeta de Credito Oro' },
+          { key: 'Tarjeta de Credito Platinum' },
+          { key: 'Credito personal hasta $ 25,000.00' }
+        ];
+      } else{
         planes = [
           { key: 'Tiene acceso a apertura de cuenta corriente' },
           { key: 'Tarjeta de Credito Clasica' },
