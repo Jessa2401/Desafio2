@@ -54,7 +54,8 @@ const handleAddIngreso = (values, { resetForm }) => {
   };
   const newIngresos = ingresos.concat(newIngreso);
   setIngresos(newIngresos);
-  saveIngresosToStorage(newIngresos); // Guardar ingresos en AsyncStorage
+  saveIngresosToStorage(newIngresos);
+  // Guardar ingresos en AsyncStorage
   resetForm();
 };
 
@@ -89,6 +90,7 @@ const handleNext = () => {
     Alert.alert('Error', 'Debe ingresar al menos un tipo de ingreso antes de continuar.');
   } else {
     navigation.navigate('Egresos', { ingresos });
+
   }
 }
 

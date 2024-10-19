@@ -1,12 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TextInput, Button, TouchableOpacity, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+
 
 const ProductoFinanciero = ({ route }) => {
+
+
+
   const { productos } = route.params;
   const [selectedProductos, setSelectedProductos] = useState([]);
   const [nombreCompleto, setNombreCompleto] = useState('');
   const [direccion, setDireccion] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [fotografiaCarnet, setFotografiaCarnet] = useState(null); // Guardará la URI de la foto del carnet
+  const [fotografiaSelfie, setFotografiaSelfie] = useState(null); 
+  
+  
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Se requieren permisos para acceder a la cámara.');
+      }
+    })();
+  }, []);
+
+  
 
   const handleProductoSelect = (producto) => {
     // Si el producto ya está seleccionado, lo quitamos de la lista. Si no, lo añadimos.
@@ -41,15 +62,75 @@ const ProductoFinanciero = ({ route }) => {
     return true;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validarFormulario()) {
-      Alert.alert('Solicitud enviada', 'Tu solicitud ha sido enviada con éxito.');
+      const data = {
+        nombreCompleto: nombreCompleto,
+        informacionDireccion: direccion,
+        telefono: telefono,
+        productos: selectedProductos.map(producto => producto.key), // Solo envía los nombres de productos
+        idPaquete: 1, // Puedes actualizar esto según lo que corresponda
+        salario: 1500.00, // Deberías actualizar estos valores dinámicamente si tienes esa información
+        negocioPropio: 500.00,
+        pensiones: 200.00,
+        remesas: 300.00,
+        ingresosVarios: 100.00,
+        alquilerHipoteca: 400.00,
+        canastaBasica: 200.00,
+        financiamientos: 100.00,
+        transporte: 150.00,
+        serviciosPublicos: 80.00,
+        saludSeguro: 120.00,
+        egresosVarios: 50.00
+      };
+  
+      try {
+        const response = await axios.post('https://bancoudb.onrender.com/api/clientes/save', data);
+  
+        if (response.status === 200) {
+          Alert.alert('Solicitud enviada', 'Tu solicitud ha sido enviada con éxito.');
+        } else {
+          Alert.alert('Error', 'Hubo un problema al enviar la solicitud.');
+        }
+      } catch (error) {
+        console.error('Error al enviar la solicitud:', error);
+        Alert.alert('Error', 'No se pudo enviar la solicitud.');
+      }
+    }
+  };
+  
+  const pickImage = async (setImage) => {
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      setImage(result.uri);
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Productos Financieros</Text>
+
+      {/* Lista de productos financieros */}
+      <FlatList
+        data={productos}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => handleProductoSelect(item)}>
+            <Text
+              style={[
+                styles.item,
+                selectedProductos.includes(item) ? styles.selectedItem : null,
+              ]}
+            >
+              {item.key}
+            </Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+      />
 
       {/* Mostrar los productos seleccionados */}
       {selectedProductos.length > 0 && (
@@ -84,26 +165,15 @@ const ProductoFinanciero = ({ route }) => {
         onChangeText={setTelefono}
       />
 
+<TouchableOpacity style={styles.photoButton} onPress={() => pickImage(setFotografiaCarnet)}>
+        <Text style={styles.photoButtonText}>Tomar foto de Carnet</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.photoButton} onPress={() => pickImage(setFotografiaSelfie)}>
+        <Text style={styles.photoButtonText}>Tomar Selfie</Text>
+      </TouchableOpacity>
       {/* Botón para enviar la solicitud */}
       <Button title="Enviar Solicitud" onPress={handleSubmit} />
-
-      {/* Lista de productos financieros */}
-      <FlatList
-        data={productos}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleProductoSelect(item)}>
-            <Text
-              style={[
-                styles.item,
-                selectedProductos.includes(item) ? styles.selectedItem : null,
-              ]}
-            >
-              {item.key}
-            </Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-      />
     </View>
   );
 };
@@ -162,6 +232,23 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     fontSize: 16,
     backgroundColor: '#fff',
+  },
+  photoButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  photoButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginTop: 10,
+    borderRadius: 10,
   },
 });
 

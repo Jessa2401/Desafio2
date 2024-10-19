@@ -56,6 +56,7 @@ function Egresos({ route, navigation }) {
     // Guardar los egresos en AsyncStorage
     saveEgresosToStorage(updatedEgresos);
 
+
     // Animación de fade in
     Animated.timing(fadeAnim, {
       toValue: 1,
